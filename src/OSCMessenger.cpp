@@ -20,7 +20,7 @@ OSCMessenger::OSCMessenger() : mSocket(mIoContext, asio::ip::udp::v4()), mOscAdd
     mEndpoint = *endpoints.begin();
 
     // alloc buffer in memory?
-    mBuffer = new char[1024];
+    mBuffer = new char[OUTPUT_BUFFER_SIZE];
 }
 
 void OSCMessenger::next_k(int nSamples) {
@@ -37,11 +37,11 @@ void OSCMessenger::next_k(int nSamples) {
     out0(0) = 4.5;
 }
 
-} // namespace OSCMessenger
-
 OSCMessenger::~OSCMessenger() {
     delete[] mBuffer;
 }
+
+} // namespace OSCMessenger
 
 PluginLoad(OSCMessengerUGens) {
     // Plugin magic
