@@ -17,10 +17,12 @@ public:
 private:
     // Calc function
     void next_k(int nSamples);
+    void extractOscAddress();
+    void extractPortNumber();
 
     // Member variables
-    // UdpSocket mSocket;
-    const char* mOscAddress;
+    char* mOscAddress;
+    int mPortNumber;
     char* mBuffer;
     OSCPP::Client::Packet mPacket;
     asio::io_context mIoContext;
