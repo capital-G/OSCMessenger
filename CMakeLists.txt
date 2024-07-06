@@ -17,8 +17,6 @@ target_include_directories(OSCMessenger PUBLIC ${SC_SRC_PATH}/common)
 target_include_directories(OSCMessenger PUBLIC ${PROJECT_SOURCE_DIR}/external/oscpp/include)
 target_include_directories(OSCMessenger PUBLIC ${PROJECT_SOURCE_DIR}/external/asio/asio/include)
 
-set_target_properties(OSCMessenger PROPERTIES SUFFIX ".scx")
-
 if(NOT CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
 endif()
