@@ -31,8 +31,6 @@ OSCMessenger : UGen {
 			doneValue,
 		].addAll(oscAddressAscii).addAll(doneAddressAscii).addAll(values);
 
-		args.postln;
-
 		^super.new1(*args);
 	}
 }
