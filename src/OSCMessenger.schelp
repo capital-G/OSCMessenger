@@ -1,0 +1,63 @@
+TITLE:: OSCMessenger
+summary:: Send UGen values via OSC.
+categories:: External Control>OSC
+related:: Classes/SendReply, Reference/OSCdef
+
+DESCRIPTION::
+Send the output of a UGen to another application via OSC.
+
+code::
+// start some signal
+(
+Ndef(\myOscBridge, {
+	var sig = SinOsc.ar(0.4);
+	OSCMessenger.kr(
+		portNumber: 5553,
+		oscAddress: "/sine",
+		trigger: 60.0,
+		values: sig,
+		doneAddress: "/doneSine",
+		doneValue: 1.0,
+	);
+	sig;
+});
+)
+::
+
+Receive the code via e.g. sclang (but this can be any other application on your PC which listens for OSC messages)
+
+code::
+// normal messages
+OSCdef(\myOsc, {|m| m.postln}, path: "/sine", recvPort: 5553);
+// [ /helloSine, 0.044355537742376 ]
+
+// done message
+OSCdef(\stopOsc, {|m| "received done".postln; m.postln}, path: "/doneSine", recvPort: 5553)
+Ndef(\myOscBridge).clear;
+// [ /stopSine, 1.0 ]
+::
+
+CLASSMETHODS::
+
+METHOD:: kr
+argument:: portNumber
+The port number to which the OSC message will be sent.
+
+argument:: oscAddress
+The OSC address to which the value of a ugen will be sent.
+
+argument:: trigger
+Anything value greater 0 will trigger a message to be sent at the maximum rate of the control rate (aka. BlockSize/SampleRate).
+If a float value is provided, it will be wrapped in a link::Classes/Impulse::, so in order to send out values at 60Hz, simply use code::60.0::.
+To always send at the highest resolution use a constant non-float above 0.0, like code::DC.kr(1.0)::
+
+argument:: values
+A UGen or array UGens whose values that will be used as float arguments of the OSC message.
+OSCMessenger is only operating at control rate, so audio rate UGens will be sampled at control rate.
+
+argument:: doneAddress
+An address to which an OSC message can be send when the Synth gets removed.
+If it is kept at its default value code::nil::, no such message will be send.
+
+argument:: doneValue
+The value of said message.

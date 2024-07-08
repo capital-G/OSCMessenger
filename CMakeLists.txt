@@ -23,3 +23,4 @@ endif()
 
 install(TARGETS OSCMessenger LIBRARY DESTINATION ${PROJECT_NAME})
 install(FILES src/OSCMessenger.sc DESTINATION ${PROJECT_NAME}/Classes)
+install(FILES src/OSCMessenger.schelp DESTINATION ${PROJECT_NAME}/HelpSource/Classes)
