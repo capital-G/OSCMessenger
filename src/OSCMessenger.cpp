@@ -83,16 +83,16 @@ void OSCMessenger::allocBuffers() {
 
 void OSCMessenger::next_k(int nSamples) {
     OSCPP::Client::Packet packet(mBuffer, OUTPUT_BUFFER_SIZE);
+    bool trigger = in0(1) > 0.0;
 
-    packet.openMessage(mOscAddress, mNumValues);
-
-    if (in0(1) > 0.0) {
+    if(trigger) {
+        packet.openMessage(mOscAddress, mNumValues);
         for(int i=0; i<mNumValues; i++) {
             packet.float32(in0(i+mValueOffset));
         }
+        packet.closeMessage();
+        mSocket.send_to(asio::buffer(mBuffer, packet.size()), mEndpoint);
     }
-    packet.closeMessage();
-    mSocket.send_to(asio::buffer(mBuffer, packet.size()), mEndpoint);
 
     out0(0) = 0.0;
 }
