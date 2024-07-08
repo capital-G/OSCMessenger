@@ -1,0 +1,50 @@
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+    strategy:
+      matrix:
+        include:
+          - name: macOS
+            os: macos-latest
+            cmakePresetName: macOS
+
+          - name: Linux-x64
+            os: ubuntu-latest
+            cmakePresetName: Linux
+
+    env:
+      SC_SRC_PATH: ${{ github.workspace }}/supercollider
+      BUILD_PATH: ${{ github.workspace }}/build
+      INSTALL_PATH: ${{ github.workspace }}/install
+      ARCHIVE_NAME: OSCMessenger-${{ matrix.name }}.zip
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Checkout SuperCollider
+        uses: actions/checkout@v4
+        with:
+          repository: supercollider/supercollider
+          path: ${{ env.SC_SRC_PATH }}
+          ref: main
+
+      - name: Configure CMake
+        shell: bash
+        run: cmake --preset ${{ matrix.cmakePresetName}}
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --target install --config Release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "OSCMessenger_${{matrix.name}}_${{github.sha}}"
+          path: install/
