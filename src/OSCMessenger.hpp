@@ -17,17 +17,19 @@ public:
 private:
     // Calc function
     void next_k(int nSamples);
-    int extractOscAddress();
-    int extractPortNumber();
-    void setupEndpoint(int portNumber);
+    void extractArgs();
+    void setupEndpoint();
     void allocBuffers();
-    void setupValues(int valueOffset);
 
     // Member variables
     char* mOscAddress;
+    char* mDoneAddress;
+    bool mSendDoneMessage;
+    float mDoneValue;
     char* mBuffer;
     int mValueOffset;
     int mNumValues;
+    int mPortNumber;
 
     OSCPP::Client::Packet mPacket;
     asio::io_context mIoContext;

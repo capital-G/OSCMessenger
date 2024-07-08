@@ -14,46 +14,64 @@ OSCMessenger::OSCMessenger() : mSocket(mIoContext, asio::ip::udp::v4()) {
     mCalcFunc = make_calc_function<OSCMessenger, &OSCMessenger::next_k>();
     
     allocBuffers();
-    mValueOffset = extractOscAddress();
-    setupEndpoint(extractPortNumber());
-    setupValues(mValueOffset);
+    extractArgs();
+    setupEndpoint();
 
     // calc one output sample
     next_k(1);
 }
 
-int OSCMessenger::extractOscAddress() {
+void OSCMessenger::extractArgs() {
+    // string extraction "stolen" from SendReply
+
     // you'll need to define unit in order to use ClearUnitIfMemFailed
     Unit* unit = (Unit*) this;
-    
-    // stolen from SendReply
-    // offset is due to port, addressSize, oscAddressArgs...
-    const int kVarOffset = 2;
-    int m_oscAddressSize = in0(kVarOffset-1);
+
+    /*
+    args = [
+        rate, <-- ignore
+        portNumber,
+        trigger,
+        oscAddressAscii.size,
+        doneAddressAscii.size,
+        doneValue,
+    ].addAll(oscAddressAscii).addAll(doneAddress).addAll(values);
+    */
+    mPortNumber = (int) in0(0);
+    int oscAddressSize = in0(2);
+    int doneAddressSize = in0(3);
+    mDoneValue = *in(4);
+    mSendDoneMessage = doneAddressSize > 0.5;
+    const int oscAddressOffset = 5;
+    const int doneAddressOffset = oscAddressOffset + oscAddressSize;
+    mValueOffset = oscAddressOffset + oscAddressSize + doneAddressSize;
+    mNumValues = mNumInputs - mValueOffset;
 
     // +1 b/c of null termination
-    const int oscAddressAllocSize = (m_oscAddressSize + 1) * sizeof(char);
-    
-    char *chunk = (char *)RTAlloc(mWorld, m_oscAddressSize);
-    ClearUnitIfMemFailed(chunk);
-    mOscAddress = chunk;
-
-    for (int i = 0; i < (int)m_oscAddressSize; i++) {
-        mOscAddress[i] = (char)in0(kVarOffset + i);
+    const int oscAddressAllocSize = (oscAddressSize + 1) * sizeof(char);    
+    char *oscAddressChunk = (char *)RTAlloc(mWorld, oscAddressAllocSize);
+    ClearUnitIfMemFailed(oscAddressChunk);
+    mOscAddress = oscAddressChunk;
+    for (int i = 0; i < (int)oscAddressSize; i++) {
+        mOscAddress[i] = (char)in0(oscAddressOffset + i);
     }
     // terminate string
-    mOscAddress[m_oscAddressSize] = 0;
+    mOscAddress[oscAddressSize] = 0;
 
-    return kVarOffset + m_oscAddressSize;
+    // same procedure
+    const int doneAddressAllocSize = (doneAddressSize + 1) * sizeof(char);
+    char *doneAddressChunk = (char *)RTAlloc(mWorld, doneAddressAllocSize);
+    ClearUnitIfMemFailed(doneAddressChunk);
+    mDoneAddress = doneAddressChunk;
+    for (int i = 0; i < (int)doneAddressSize; i++) {
+        mDoneAddress[i] = (char)in0(doneAddressOffset + i);
+    }
+    mOscAddress[oscAddressSize] = 0;
 }
 
-int OSCMessenger::extractPortNumber() {
-    return (int) in0(0);
-}
-
-void OSCMessenger::setupEndpoint(int portNumber) {
+void OSCMessenger::setupEndpoint() {
     asio::ip::udp::resolver resolver(mIoContext);
-    asio::ip::udp::resolver::results_type endpoints = resolver.resolve(asio::ip::udp::resolver::query("127.0.0.1", std::to_string(portNumber)));
+    asio::ip::udp::resolver::results_type endpoints = resolver.resolve(asio::ip::udp::resolver::query("127.0.0.1", std::to_string(mPortNumber)));
     mEndpoint = *endpoints.begin();
 }
 
@@ -63,17 +81,15 @@ void OSCMessenger::allocBuffers() {
     ClearUnitIfMemFailed(mBuffer);
 }
 
-void OSCMessenger::setupValues(int valueOffset) {
-    mNumValues = mNumInputs - valueOffset;
-}
-
 void OSCMessenger::next_k(int nSamples) {
     OSCPP::Client::Packet packet(mBuffer, OUTPUT_BUFFER_SIZE);
 
     packet.openMessage(mOscAddress, mNumValues);
 
-    for(int i=0; i<mNumValues; i++) {
-        packet.float32(in0(i+mValueOffset));
+    if (in0(1) > 0.0) {
+        for(int i=0; i<mNumValues; i++) {
+            packet.float32(in0(i+mValueOffset));
+        }
     }
     packet.closeMessage();
     mSocket.send_to(asio::buffer(mBuffer, packet.size()), mEndpoint);
@@ -82,7 +98,13 @@ void OSCMessenger::next_k(int nSamples) {
 }
 
 OSCMessenger::~OSCMessenger() {
-    delete[] mBuffer;
+    if(mSendDoneMessage) {
+        OSCPP::Client::Packet packet(mBuffer, OUTPUT_BUFFER_SIZE);
+        packet.openMessage(mDoneAddress, 1)
+            .float32(mDoneValue)
+        .closeMessage();
+        mSocket.send_to(asio::buffer(mBuffer, packet.size()), mEndpoint);
+    }
 }
 
 } // namespace OSCMessenger
