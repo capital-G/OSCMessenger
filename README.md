@@ -32,3 +32,7 @@ All necessary files for the plugin can then be found in `install` folder which t
 Platform.systemExtensionDir.openOS;
 Platform.userExtensionDir.openOS;
 ```
+
+## License
+
+AGPL-3.0
