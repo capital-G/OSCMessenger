@@ -23,7 +23,7 @@ SC_SRC_PATH=/path/to/src/of/SuperCollider cmake --preset macOS
 Build the extension via
 
 ```shell
-cmake --build build --target install --config Debug
+cmake --build build --target install --config Release
 ```
 
 All necessary files for the plugin can then be found in `install` folder which then need to be copied into the extension directory.
