@@ -1,8 +1,41 @@
 # OSCMessenger
 
 Send the output of any UGen via OSC messages from *scsynth* to any other program.
-This extends `SendReply` by not relying on *sclang* as an additional dispatcher anymore and has a *doneMessage* feature.
-Currently this is limited to control rate.
+This extends [`SendReply`](https://docs.supercollider.online/Classes/SendReply.html) by not relying on *sclang* as an additional dispatcher anymore and has a *doneMessage* feature.
+
+## Example
+
+```supercollider
+// start some signal
+(
+Ndef(\myOscBridge, {
+	var sig = SinOsc.ar(0.4);
+	OSCMessenger.kr(
+		portNumber: 5553,
+		oscAddress: "/sine",
+		trigger: 60.0,
+		values: sig,
+		doneAddress: "/doneSine",
+		doneValue: 1.0,
+	);
+	sig;
+});
+)
+```
+
+Now receive the values of the SinOsc via any application which can listens for OSC messages.
+For sclang this becomes
+
+```supercollider
+// normal messages
+OSCdef(\myOsc, {|m| m.postln}, path: "/sine", recvPort: 5553);
+// [ /helloSine, 0.044355537742376 ]
+
+// done message
+OSCdef(\stopOsc, {|m| "received done".postln; m.postln}, path: "/doneSine", recvPort: 5553)
+Ndef(\myOscBridge).clear;
+// [ /stopSine, 1.0 ]
+```
 
 ## Build
 
