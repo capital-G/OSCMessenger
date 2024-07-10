@@ -30,6 +30,7 @@ private:
     // Member variables
     char* mOscAddress;
     char* mDoneAddress;
+    char* mHostAddress;
     bool mSendDoneMessage;
     float mDoneValue;
     char* mBuffer;

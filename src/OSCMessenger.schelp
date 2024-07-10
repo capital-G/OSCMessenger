@@ -76,3 +76,6 @@ If it is kept at its default value code::nil::, no such message will be send.
 
 argument:: doneValue
 The value of said message.
+
+argument:: host
+Host to which the OSC messages are send.

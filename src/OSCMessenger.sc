@@ -1,9 +1,9 @@
 OSCMessenger : UGen {
-	*kr {|portNumber, oscAddress, values, trigger=60, doneAddress=nil, doneValue=1|
+	*kr {|portNumber, oscAddress, values, trigger=60, doneAddress=nil, doneValue=1, host="127.0.0.1"|
 		if(values.containsSeqColl.not) { values = values.bubble };
 		if(trigger.isFloat.or(trigger.isInteger)) { trigger = Impulse.kr(trigger) };
 		trigger = trigger.bubble;
-		[portNumber, oscAddress, values, trigger, doneAddress, doneValue].flop.do { |args|
+		[portNumber, oscAddress, values, trigger, doneAddress, doneValue, host].flop.do { |args|
 			this.new1('control', *args);
 		};
 	}
@@ -12,15 +12,17 @@ OSCMessenger : UGen {
 		^this.checkValidInputs;
 	}
 
-	*new1 {|rate, portNumber, oscAddress, values, trigger, doneAddress, doneValue|
+	*new1 {|rate, portNumber, oscAddress, values, trigger, doneAddress, doneValue, host|
 		var oscAddressAscii;
 		var doneAddressAscii;
+		var hostAscii;
 		var args;
 
 		doneAddress = if(doneAddress.isNil, {""}, {doneAddress}).asString;
 
 		oscAddressAscii = oscAddress.ascii;
 		doneAddressAscii = doneAddress.ascii;
+		hostAscii = host.ascii;
 
 		args = [
 			rate,
@@ -29,7 +31,8 @@ OSCMessenger : UGen {
 			oscAddressAscii.size,
 			doneAddressAscii.size,
 			doneValue,
-		].addAll(oscAddressAscii).addAll(doneAddressAscii).addAll(values);
+			hostAscii.size,
+		].addAll(oscAddressAscii).addAll(doneAddressAscii).addAll(hostAscii).addAll(values);
 
 		^super.new1(*args);
 	}

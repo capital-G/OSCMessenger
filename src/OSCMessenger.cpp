@@ -25,29 +25,22 @@ OSCMessenger::OSCMessenger() : mSocket(mIoContext, asio::ip::udp::v4()) {
 }
 
 void OSCMessenger::extractArgs() {
-    /*
-    args = [
-        rate, <-- ignore
-        portNumber,
-        trigger,
-        oscAddressAscii.size,
-        doneAddressAscii.size,
-        doneValue,
-    ].addAll(oscAddressAscii).addAll(doneAddress).addAll(values);
-    */
-
-    const int dynamicArgsOffset = 5;
+    // keep this in sync with *new1 in sclang land
+    const int dynamicArgsOffset = 6;
 
     mPortNumber = (int) in0(0);
     // trigger skipped
     const int oscAddressSize = in0(2);
     const int doneAddressSize = in0(3);
+    const int hostSize = in0(5);
     mDoneValue = *in(4);
     mSendDoneMessage = doneAddressSize > 0.5;
 
     mOscAddress = extractString(2, dynamicArgsOffset);
     mDoneAddress = extractString(3, dynamicArgsOffset + oscAddressSize);
-    mValueOffset = dynamicArgsOffset + oscAddressSize + doneAddressSize;
+    mHostAddress = extractString(5, dynamicArgsOffset + oscAddressSize + doneAddressSize);
+
+    mValueOffset = dynamicArgsOffset + oscAddressSize + doneAddressSize + hostSize;
     mNumValues = mNumInputs - mValueOffset;
 }
 
@@ -75,7 +68,7 @@ char* OSCMessenger::extractString(int sizeIndex, int startIndex) {
 
 void OSCMessenger::setupEndpoint() {
     asio::ip::udp::resolver resolver(mIoContext);
-    asio::ip::udp::resolver::results_type endpoints = resolver.resolve(asio::ip::udp::resolver::query("127.0.0.1", std::to_string(mPortNumber)));
+    asio::ip::udp::resolver::results_type endpoints = resolver.resolve(asio::ip::udp::resolver::query(mHostAddress, std::to_string(mPortNumber)));
     mEndpoint = *endpoints.begin();
 }
 
@@ -148,6 +141,7 @@ OSCMessenger::~OSCMessenger() {
     RTFree(mWorld, mBuffer);
     RTFree(mWorld, mOscAddress);
     RTFree(mWorld, mDoneAddress); 
+    RTFree(mWorld, mHostAddress); 
 }
 
 } // namespace OSCMessenger
