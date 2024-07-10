@@ -4,6 +4,10 @@
 #include "SC_PlugIn.hpp"
 #include <oscpp/client.hpp>
 #include <asio.hpp>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
 namespace OSCMessenger {
 
@@ -20,6 +24,7 @@ private:
     void extractArgs();
     void setupEndpoint();
     void allocBuffers();
+    void sendPackets();
 
     // Member variables
     char* mOscAddress;
@@ -35,6 +40,13 @@ private:
     asio::io_context mIoContext;
     asio::ip::udp::socket mSocket;
     asio::ip::udp::endpoint mEndpoint;
+
+    // thread
+    std::thread mWorkerThread;
+    std::queue<std::vector<char>> mPacketQueue;
+    std::mutex mQueueMutex;
+    std::condition_variable mQueueCondition;
+    bool mStopWorker = false;
 };
 
 } // namespace OSCMessenger

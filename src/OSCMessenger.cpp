@@ -17,6 +17,9 @@ OSCMessenger::OSCMessenger() : mSocket(mIoContext, asio::ip::udp::v4()) {
     extractArgs();
     setupEndpoint();
 
+    // start consuming thread
+    mWorkerThread = std::thread(&OSCMessenger::sendPackets, this);
+
     // calc one output sample
     next_k(1);
 }
@@ -91,13 +94,40 @@ void OSCMessenger::next_k(int nSamples) {
             packet.float32(in0(i+mValueOffset));
         }
         packet.closeMessage();
-        mSocket.send_to(asio::buffer(mBuffer, packet.size()), mEndpoint);
+
+        // push packet onto the queue
+        {
+            std::lock_guard<std::mutex> lock(mQueueMutex);
+            mPacketQueue.push(std::vector<char>(mBuffer, mBuffer + packet.size()));
+        }
+        mQueueCondition.notify_one();
+        // mSocket.send_to(asio::buffer(mBuffer, packet.size()), mEndpoint);
+
     }
 
     out0(0) = 0.0;
 }
 
+void OSCMessenger::sendPackets() {
+    while (true) {
+        std::unique_lock<std::mutex> lock(mQueueMutex);
+        mQueueCondition.wait(lock, [this] { return !mPacketQueue.empty() || mStopWorker; });
+
+        if (mStopWorker && mPacketQueue.empty()) {
+            break;
+        }
+
+        std::vector<char> packet = std::move(mPacketQueue.front());
+        mPacketQueue.pop();
+        lock.unlock();
+
+        mSocket.send_to(asio::buffer(packet), mEndpoint);
+    }
+}
+
+
 OSCMessenger::~OSCMessenger() {
+    // send done message
     if(mSendDoneMessage) {
         OSCPP::Client::Packet packet(mBuffer, OUTPUT_BUFFER_SIZE);
         packet.openMessage(mDoneAddress, 1)
@@ -105,6 +135,14 @@ OSCMessenger::~OSCMessenger() {
         .closeMessage();
         mSocket.send_to(asio::buffer(mBuffer, packet.size()), mEndpoint);
     }
+
+    // stop the worker thread
+    {
+        std::lock_guard<std::mutex> lock(mQueueMutex);
+        mStopWorker = true;
+    }
+    mQueueCondition.notify_one();
+    mWorkerThread.join();
 }
 
 } // namespace OSCMessenger
