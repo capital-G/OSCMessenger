@@ -25,6 +25,7 @@ private:
     void setupEndpoint();
     void allocBuffers();
     void sendPackets();
+    char* extractString(int sizeIndex, int startIndex);
 
     // Member variables
     char* mOscAddress;

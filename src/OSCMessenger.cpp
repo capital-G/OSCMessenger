@@ -25,11 +25,6 @@ OSCMessenger::OSCMessenger() : mSocket(mIoContext, asio::ip::udp::v4()) {
 }
 
 void OSCMessenger::extractArgs() {
-    // string extraction "stolen" from SendReply
-
-    // you'll need to define unit in order to use ClearUnitIfMemFailed
-    Unit* unit = (Unit*) this;
-
     /*
     args = [
         rate, <-- ignore
@@ -40,36 +35,40 @@ void OSCMessenger::extractArgs() {
         doneValue,
     ].addAll(oscAddressAscii).addAll(doneAddress).addAll(values);
     */
+
+    const int dynamicArgsOffset = 5;
+
     mPortNumber = (int) in0(0);
-    int oscAddressSize = in0(2);
-    int doneAddressSize = in0(3);
+    // trigger skipped
+    const int oscAddressSize = in0(2);
+    const int doneAddressSize = in0(3);
     mDoneValue = *in(4);
     mSendDoneMessage = doneAddressSize > 0.5;
-    const int oscAddressOffset = 5;
-    const int doneAddressOffset = oscAddressOffset + oscAddressSize;
-    mValueOffset = oscAddressOffset + oscAddressSize + doneAddressSize;
+
+    mOscAddress = extractString(2, dynamicArgsOffset);
+    mDoneAddress = extractString(3, dynamicArgsOffset + oscAddressSize);
+    mValueOffset = dynamicArgsOffset + oscAddressSize + doneAddressSize;
     mNumValues = mNumInputs - mValueOffset;
+}
 
+char* OSCMessenger::extractString(int sizeIndex, int startIndex) {
+    // you'll need to define unit in order to use ClearUnitIfMemFailed
+    Unit* unit = (Unit*) this;
+
+    const int size = in0(sizeIndex);
     // +1 b/c of null termination
-    const int oscAddressAllocSize = (oscAddressSize + 1) * sizeof(char);    
-    char *oscAddressChunk = (char *)RTAlloc(mWorld, oscAddressAllocSize);
-    ClearUnitIfMemFailed(oscAddressChunk);
-    mOscAddress = oscAddressChunk;
-    for (int i = 0; i < (int)oscAddressSize; i++) {
-        mOscAddress[i] = (char)in0(oscAddressOffset + i);
-    }
-    // terminate string
-    mOscAddress[oscAddressSize] = 0;
+    const int stringAllocSize = (size + 1) * sizeof(char);    
+    char* buffer = (char*) RTAlloc(mWorld, stringAllocSize);
+    ClearUnitIfMemFailed(buffer);
 
-    // same procedure
-    const int doneAddressAllocSize = (doneAddressSize + 1) * sizeof(char);
-    char *doneAddressChunk = (char *)RTAlloc(mWorld, doneAddressAllocSize);
-    ClearUnitIfMemFailed(doneAddressChunk);
-    mDoneAddress = doneAddressChunk;
-    for (int i = 0; i < (int)doneAddressSize; i++) {
-        mDoneAddress[i] = (char)in0(doneAddressOffset + i);
+    for (int i = 0; i < size; i++) {
+        buffer[i] = (char) in0(startIndex + i);
     }
-    mOscAddress[oscAddressSize] = 0;
+
+    // terminate string
+    buffer[size] = 0;
+
+    return buffer;
 }
 
 void OSCMessenger::setupEndpoint() {
