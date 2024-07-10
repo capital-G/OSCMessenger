@@ -59,7 +59,9 @@ char* OSCMessenger::extractString(int sizeIndex, int startIndex) {
     // +1 b/c of null termination
     const int stringAllocSize = (size + 1) * sizeof(char);    
     char* buffer = (char*) RTAlloc(mWorld, stringAllocSize);
-    ClearUnitIfMemFailed(buffer);
+
+    // on linux this will complain b/c the template can return void
+    // ClearUnitIfMemFailed(buffer);
 
     for (int i = 0; i < size; i++) {
         buffer[i] = (char) in0(startIndex + i);
