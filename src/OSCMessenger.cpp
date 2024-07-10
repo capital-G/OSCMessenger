@@ -82,10 +82,10 @@ void OSCMessenger::allocBuffers() {
 }
 
 void OSCMessenger::next_k(int nSamples) {
-    OSCPP::Client::Packet packet(mBuffer, OUTPUT_BUFFER_SIZE);
     bool trigger = in0(1) > 0.0;
 
     if(trigger) {
+        OSCPP::Client::Packet packet(mBuffer, OUTPUT_BUFFER_SIZE);
         packet.openMessage(mOscAddress, mNumValues);
         for(int i=0; i<mNumValues; i++) {
             packet.float32(in0(i+mValueOffset));
