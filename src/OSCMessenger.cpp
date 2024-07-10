@@ -144,6 +144,10 @@ OSCMessenger::~OSCMessenger() {
     }
     mQueueCondition.notify_one();
     mWorkerThread.join();
+
+    RTFree(mWorld, mBuffer);
+    RTFree(mWorld, mOscAddress);
+    RTFree(mWorld, mDoneAddress); 
 }
 
 } // namespace OSCMessenger
