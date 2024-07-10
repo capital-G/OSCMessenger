@@ -1,7 +1,7 @@
 OSCMessenger : UGen {
 	*kr {|portNumber, oscAddress, trigger, values, doneAddress=nil, doneValue=1|
 		if(values.containsSeqColl.not) { values = values.bubble };
-		if(trigger.isFloat) { trigger = Impulse.kr(trigger) };
+		if(trigger.isFloat.or(trigger.isInteger)) { trigger = Impulse.kr(trigger) };
 		trigger = trigger.bubble;
 		[portNumber, trigger, oscAddress, doneAddress, doneValue, values].flop.do { |args|
 			this.new1('control', *args);
