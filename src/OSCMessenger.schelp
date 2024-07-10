@@ -14,8 +14,8 @@ Ndef(\myOscBridge, {
 	OSCMessenger.kr(
 		portNumber: 5553,
 		oscAddress: "/sine",
-		trigger: 60.0,
 		values: sig,
+		trigger: 60.0,
 		doneAddress: "/doneSine",
 		doneValue: 1.0,
 	);
@@ -37,6 +37,21 @@ Ndef(\myOscBridge).clear;
 // [ /stopSine, 1.0 ]
 ::
 
+As most likely some arguments stay the same, such as code::portNumber:: and trigger, it can be useful to use the partial application features of sclang, so
+
+code::
+(
+// at control rate speed (around 750 messages/sec) to port 5553
+~fastMessenger = OSCMessenger.kr(5553, _, _, DC.kr(1.0));
+
+Ndef(\myOscBridge, {
+	var sig = SinOsc.ar(0.1);
+	~fastMessenger.("/myAddress", sig);
+	sig;
+});
+)
+::
+
 CLASSMETHODS::
 
 METHOD:: kr
@@ -46,14 +61,14 @@ The port number to which the OSC message will be sent.
 argument:: oscAddress
 The OSC address to which the value of a ugen will be sent.
 
+argument:: values
+A UGen or array UGens whose values that will be used as float arguments of the OSC message.
+OSCMessenger is only operating at control rate, so audio rate UGens will be sampled at control rate.
+
 argument:: trigger
 Anything value greater 0 will trigger a message to be sent at the maximum rate of the control rate (aka. BlockSize/SampleRate).
 If a float value is provided, it will be wrapped in a link::Classes/Impulse::, so in order to send out values at 60Hz, simply use code::60.0::.
 To always send at the highest resolution use a constant non-float above 0.0, like code::DC.kr(1.0)::
-
-argument:: values
-A UGen or array UGens whose values that will be used as float arguments of the OSC message.
-OSCMessenger is only operating at control rate, so audio rate UGens will be sampled at control rate.
 
 argument:: doneAddress
 An address to which an OSC message can be send when the Synth gets removed.
