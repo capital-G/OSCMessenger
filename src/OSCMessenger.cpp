@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "SC_PlugIn.hpp"
 #include "OSCMessenger.hpp"
 
@@ -26,19 +28,27 @@ OSCMessenger::OSCMessenger() : mSocket(mIoContext, asio::ip::udp::v4()) {
 
 void OSCMessenger::extractArgs() {
     // keep this in sync with *new1 in sclang land
-    const int dynamicArgsOffset = 6;
+    const int dynamicArgsOffset = 7;
 
     mPortNumber = (int) in0(0);
     // trigger skipped
     const int oscAddressSize = in0(2);
     const int doneAddressSize = in0(3);
     const int hostSize = in0(5);
+    const bool appendNodeId = in0(6) > 0.5;
     mDoneValue = *in(4);
     mSendDoneMessage = doneAddressSize > 0.5;
 
     mOscAddress = extractString(2, dynamicArgsOffset);
     mDoneAddress = extractString(3, dynamicArgsOffset + oscAddressSize);
     mHostAddress = extractString(5, dynamicArgsOffset + oscAddressSize + doneAddressSize);
+
+    if (appendNodeId) {
+        std::string nodeID = std::to_string(mParent->mNode.mID);
+        char const *nodeIDchar = nodeID.c_str(); 
+        strcat(mOscAddress, nodeIDchar);
+        strcat(mDoneAddress, nodeIDchar);
+    }
 
     mValueOffset = dynamicArgsOffset + oscAddressSize + doneAddressSize + hostSize;
     mNumValues = mNumInputs - mValueOffset;
