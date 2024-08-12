@@ -19,6 +19,10 @@
             "name": "Linux",
             "inherits": "default",
             "generator": "Unix Makefiles"
+        },
+        {
+            "name": "Windows",
+            "inherits": "default"
         }
     ],
     "buildPresets": [
@@ -30,6 +34,11 @@
         {
             "name": "Linux",
             "configurePreset": "Linux",
+            "targets": ["install"]
+        },
+        {
+            "name": "Windows",
+            "configurePreset": "Windows",
             "targets": ["install"]
         }
     ],
@@ -57,6 +66,19 @@
                 {
                     "type": "build",
                     "name": "Linux"
+                }
+            ]
+        },
+        {
+            "name": "Windows",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "Windows"
+                },
+                {
+                    "type": "build",
+                    "name": "Windows"
                 }
             ]
         }
