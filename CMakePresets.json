@@ -22,7 +22,11 @@
         },
         {
             "name": "Windows",
-            "inherits": "default"
+            "inherits": "default",
+            "cacheVariables": {
+                "SC_SRC_PATH": "$env{SC_SRC_PATH}",
+                "_WIN32_WINNT": "0x0601"
+            }
         }
     ],
     "buildPresets": [
