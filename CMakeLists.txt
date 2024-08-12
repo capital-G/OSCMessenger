@@ -7,6 +7,9 @@ if(APPLE OR WIN32)
     set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
 
+# Windows - puts redistributable DLLs in install directory
+include(InstallRequiredSystemLibraries)
+
 # optimizations
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	set(CMAKE_COMPILER_IS_CLANG 1)
