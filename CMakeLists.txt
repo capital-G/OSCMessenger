@@ -79,26 +79,15 @@ endif()
 
 # windows fix from https://github.com/supercollider/supercollider/blob/develop/tools/cmake_gen/SuperColliderCompilerConfig.cmake
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    # these options only apply if we're doing a 32-bit build, otherwise they cause a diagnostic
-    # https://stackoverflow.com/questions/1067630/sse2-option-in-visual-c-x64
-    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        target_compile_options(${target} PUBLIC
-            $<$<BOOL:${has_sse}>:/arch:SSE>
-            $<$<BOOL:${has_sse2}>:/arch:SSE2>
-            )
-    endif()
-    if(NATIVE)
-        message(WARNING "-DNATIVE is not supported with MSVC")
-    endif()
     # C4514: inline function not used
     # C4625: copy ctor implicitly deleted
     # C4626: copy assign implicitly deleted
     # C4820: padding added after member
     # C5026: move ctor implicitly deleted
     # C5027: move assign implicitly deleted
-    target_compile_options(${target} PUBLIC
+    add_compile_options(
         $<$<BOOL:${STRICT}>:-Wall -WX -wd4820 -wd4514 -wd5026 -wd5027 -wd4626 -wd4625>
-        )
+    )
 endif()
 
 install(TARGETS OSCMessenger LIBRARY DESTINATION ${PROJECT_NAME})
