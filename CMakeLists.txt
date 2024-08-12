@@ -7,6 +7,9 @@ if(APPLE OR WIN32)
     set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
 
+# Windows - puts redistributable DLLs in install directory
+include(InstallRequiredSystemLibraries)
+
 # optimizations
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	set(CMAKE_COMPILER_IS_CLANG 1)
@@ -72,6 +75,19 @@ target_include_directories(OSCMessenger PUBLIC ${PROJECT_SOURCE_DIR}/external/as
 
 if(NOT CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
+endif()
+
+# windows fix from https://github.com/supercollider/supercollider/blob/develop/tools/cmake_gen/SuperColliderCompilerConfig.cmake
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    # C4514: inline function not used
+    # C4625: copy ctor implicitly deleted
+    # C4626: copy assign implicitly deleted
+    # C4820: padding added after member
+    # C5026: move ctor implicitly deleted
+    # C5027: move assign implicitly deleted
+    add_compile_options(
+        $<$<BOOL:${STRICT}>:-Wall -WX -wd4820 -wd4514 -wd5026 -wd5027 -wd4626 -wd4625>
+    )
 endif()
 
 install(TARGETS OSCMessenger LIBRARY DESTINATION ${PROJECT_NAME})
