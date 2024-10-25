@@ -3,7 +3,7 @@ OSCMessenger : UGen {
 		if(values.containsSeqColl.not) { values = values.bubble };
 		if(trigger.isFloat.or(trigger.isInteger)) { trigger = Impulse.kr(trigger) };
 		trigger = trigger.bubble;
-		[portNumber, oscAddress, values, trigger, doneAddress, doneValue, host].flop.do { |args|
+		[portNumber, oscAddress, values, trigger, doneAddress, doneValue, host, appendNodeId].flop.do { |args|
 			this.new1('control', *args);
 		};
 	}
@@ -32,7 +32,7 @@ OSCMessenger : UGen {
 			doneAddressAscii.size,
 			doneValue,
 			hostAscii.size,
-			appendNodeId,
+			appendNodeId.asInteger,
 		].addAll(oscAddressAscii).addAll(doneAddressAscii).addAll(hostAscii).addAll(values);
 
 		^super.new1(*args);
