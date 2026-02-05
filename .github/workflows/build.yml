@@ -18,9 +18,13 @@ jobs:
             os: macos-15-intel
             cmakePresetName: macOS
 
-          - name: Linux-x64
+          - name: linux-x86-64
             os: ubuntu-latest
             cmakePresetName: Linux
+
+          - name: windows-x86-64
+            os: windows-2022
+            cmakePresetName: Windows
 
     env:
       SC_SRC_PATH: ${{ github.workspace }}/supercollider
@@ -50,5 +54,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: "OSCMessenger_${{matrix.name}}_${{github.sha}}"
+          name: "OSCMessenger-${{matrix.name}}"
           path: install/

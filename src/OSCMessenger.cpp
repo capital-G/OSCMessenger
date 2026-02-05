@@ -1,10 +1,7 @@
-#include <stdio.h>
-#include <string.h>
-#include "SC_PlugIn.hpp"
 #include "OSCMessenger.hpp"
 
-#include <oscpp/client.hpp>
-#include <asio.hpp>
+#include <stdio.h>
+#include <string.h>
 
 static InterfaceTable *ft;
 
