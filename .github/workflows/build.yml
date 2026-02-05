@@ -18,9 +18,13 @@ jobs:
             os: macos-15-intel
             cmakePresetName: macOS
 
-          - name: Linux-x64
+          - name: Linux-x86-64
             os: ubuntu-latest
             cmakePresetName: Linux
+
+          - name: windows-x86-64
+            os: windows-2022
+            cmakePresetName: Windows
 
     env:
       SC_SRC_PATH: ${{ github.workspace }}/supercollider
