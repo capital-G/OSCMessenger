@@ -50,7 +50,23 @@ OSCMessenger : UGen {
 			doneValue: doneValue,
 			host: host,
 			prependNodeId: prependNodeId,
-		)
+		);
+		^this;
+	}
+}
+
++ Array {
+	oscMessenger {|portNumber, oscAddress, trigger=60, doneAddress=nil, doneValue=1, host="127.0.0.1", prependNodeId=false|
+		OSCMessenger.kr(
+			portNumber: portNumber,
+			oscAddress: oscAddress,
+			values: this,
+			trigger: trigger,
+			doneAddress: doneAddress,
+			doneValue: doneValue,
+			host: host,
+			prependNodeId: prependNodeId,
+		);
 		^this;
 	}
 }
