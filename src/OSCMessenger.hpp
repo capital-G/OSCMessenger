@@ -1,9 +1,11 @@
 
 #pragma once
 
-#include "SC_PlugIn.hpp"
-#include <oscpp/client.hpp>
+// ASIO must be included before SC_PlugIn.hpp on Windows.
+// SC headers define IN/OUT macros that conflict with Windows SDK SAL annotations.
 #include <asio.hpp>
+#include <oscpp/client.hpp>
+#include "SC_PlugIn.hpp"
 #include <stdio.h>
 #include <string.h>
 #include <thread>
