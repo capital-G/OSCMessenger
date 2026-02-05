@@ -1,9 +1,9 @@
 OSCMessenger : UGen {
-	*kr {|portNumber, oscAddress, values, trigger=60, doneAddress=nil, doneValue=1, host="127.0.0.1", appendNodeId=false|
+	*kr {|portNumber, oscAddress, values, trigger=60, doneAddress=nil, doneValue=1, host="127.0.0.1", prependNodeId=false|
 		if(values.containsSeqColl.not) { values = values.bubble };
 		if(trigger.isFloat.or(trigger.isInteger)) { trigger = Impulse.kr(trigger) };
 		trigger = trigger.bubble;
-		[portNumber, oscAddress, values, trigger, doneAddress, doneValue, host, appendNodeId].flop.do { |args|
+		[portNumber, oscAddress, values, trigger, doneAddress, doneValue, host, prependNodeId].flop.do { |args|
 			this.new1('control', *args);
 		};
 	}
@@ -12,7 +12,7 @@ OSCMessenger : UGen {
 		^this.checkValidInputs;
 	}
 
-	*new1 {|rate, portNumber, oscAddress, values, trigger, doneAddress, doneValue, host, appendNodeId|
+	*new1 {|rate, portNumber, oscAddress, values, trigger, doneAddress, doneValue, host, prependNodeId|
 		var oscAddressAscii;
 		var doneAddressAscii;
 		var hostAscii;
@@ -32,7 +32,7 @@ OSCMessenger : UGen {
 			doneAddressAscii.size,
 			doneValue,
 			hostAscii.size,
-			appendNodeId.asInteger,
+			prependNodeId.asInteger,
 		].addAll(oscAddressAscii).addAll(doneAddressAscii).addAll(hostAscii).addAll(values);
 
 		^super.new1(*args);
@@ -40,7 +40,7 @@ OSCMessenger : UGen {
 }
 
 + UGen {
-	oscMessenger {|portNumber, oscAddress, trigger=60, doneAddress=nil, doneValue=1, host="127.0.0.1", appendNodeId=false|
+	oscMessenger {|portNumber, oscAddress, trigger=60, doneAddress=nil, doneValue=1, host="127.0.0.1", prependNodeId=false|
 		OSCMessenger.kr(
 			portNumber: portNumber,
 			oscAddress: oscAddress,
@@ -49,7 +49,7 @@ OSCMessenger : UGen {
 			doneAddress: doneAddress,
 			doneValue: doneValue,
 			host: host,
-			appendNodeId: appendNodeId,
+			prependNodeId: prependNodeId,
 		)
 		^this;
 	}

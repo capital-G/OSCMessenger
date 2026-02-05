@@ -80,6 +80,6 @@ The value of said message.
 argument:: host
 Host to which the OSC messages are send.
 
-argument:: appendNodeId
-Will append the node ID of the synth to the code::oscAddress:: and code::doneAddress::.
+argument:: prependNodeId
+Will prepend the node ID of the synth to the osc message and also to the done message.
 This allows to differentiate between multiple Synths in a polyphonic setup.
