@@ -18,7 +18,7 @@ jobs:
             os: macos-15-intel
             cmakePresetName: macOS
 
-          - name: Linux-x86-64
+          - name: linux-x86-64
             os: ubuntu-latest
             cmakePresetName: Linux
 
@@ -54,5 +54,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: "OSCMessenger_${{matrix.name}}_${{github.sha}}"
+          name: "OSCMessenger-${{matrix.name}}"
           path: install/
