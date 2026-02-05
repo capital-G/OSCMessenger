@@ -10,8 +10,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: macOS
+          - name: macOS-arm64
             os: macos-latest
+            cmakePresetName: macOS
+
+          - name: macOS-x86-64
+            os: macos-15-intel
             cmakePresetName: macOS
 
           - name: Linux-x64
